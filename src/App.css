@@ -1,42 +1,23 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+@import "tailwindcss";
+
+
+@keyframes gradient-shift {
+    0%   { background: linear-gradient(45deg, #ff613908, #ff8a6512, #ffab9106); transform: translateX(-100%); }
+    25%  { background: linear-gradient(45deg, #ff8a6512, #ffab9115, #ff704308); transform: translateX(-50%); }
+    50%  { background: linear-gradient(45deg, #ffab9115, #ff704312, #ff613908); transform: translateX(0%); }
+    75%  { background: linear-gradient(45deg, #ff704312, #ff613915, #ff8a6508); transform: translateX(50%); }
+    100% { background: linear-gradient(45deg, #ff613908, #ff8a6512, #ffab9106); transform: translateX(-100%); }
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+@keyframes gradient-wave {
+    0%   { background: linear-gradient(135deg, #ff613905, #ff8a6515, #ffab9108); transform: translateY(-50%) rotate(0deg); }
+    33%  { background: linear-gradient(135deg, #ff8a6508, #ffab9118, #ff704305); transform: translateY(0%) rotate(120deg); }
+    66%  { background: linear-gradient(135deg, #ffab9112, #ff704308, #ff613905); transform: translateY(50%) rotate(240deg); }
+    100% { background: linear-gradient(135deg, #ff613905, #ff8a6515, #ffab9108); transform: translateY(-50%) rotate(360deg); }
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+.animate-gradient-shift { animation: gradient-shift 12s ease-in-out infinite; }
+.animate-gradient-wave  { animation: gradient-wave 16s linear infinite; }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
+.blur-2xl { filter: blur(40px); }
+.blur-3xl { filter: blur(64px); }
