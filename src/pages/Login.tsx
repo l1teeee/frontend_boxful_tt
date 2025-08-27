@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import BoxfulLogoBadge from '@/components/BoxfulLogoBadge';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -13,6 +14,12 @@ const Login = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         console.log('Form submitted:', formData);
+    };
+
+    const navigate = useNavigate();
+
+    const handleRegisterClick = () => {
+        navigate('/register');
     };
 
     return (
@@ -103,6 +110,7 @@ const Login = () => {
                             <span className="text-gray-700">¿Necesitas una cuenta? </span>
                             <button
                                 type="button"
+                                onClick={handleRegisterClick}
                                 className="cursor-pointer text-[#ff6139] hover:text-[#e5562f] font-medium transition-colors duration-200 hover:underline focus:outline-none"
                             >
                                 Regístrate aquí

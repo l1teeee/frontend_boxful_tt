@@ -1,6 +1,33 @@
 @import "tailwindcss";
 
 
+.rdp-chevron {
+    --rdp-accent-color: #ff6139;
+    --rdp-accent-background-color: #f0f0f0;
+}
+
+.rdp {
+    --rdp-cell-size: 35px;
+    --rdp-accent-color: #ff6139;
+    --rdp-background-color: #ff6139;
+    --rdp-accent-color-dark: #e5562f;
+    margin: 0;
+}
+.rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+    background-color: #ff6139;
+    color: white;
+}
+.rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_disabled) {
+    background-color: #ff613920;
+}
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+    background-color: #ff613920;
+}
+.rdp-nav_button:hover {
+    background-color: #ff613920;
+}
+
+
 @keyframes gradient-shift {
     0%   { background: linear-gradient(45deg, #ff613908, #ff8a6512, #ffab9106); transform: translateX(-100%); }
     25%  { background: linear-gradient(45deg, #ff8a6512, #ffab9115, #ff704308); transform: translateX(-50%); }
