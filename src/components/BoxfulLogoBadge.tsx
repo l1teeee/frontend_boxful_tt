@@ -1,4 +1,3 @@
-// src/components/BoxfulLogoBadge.tsx
 import React, { useEffect, useRef, useState } from 'react';
 
 type Props = {

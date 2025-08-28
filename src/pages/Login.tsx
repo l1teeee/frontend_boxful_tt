@@ -1,30 +1,37 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import BoxfulLogoBadge from '@/components/BoxfulLogoBadge';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { UnifiedInput } from '@/components/UnifiedInput';
+import { validationRules } from '@/utils/validate/validationRules';
+
+interface LoginFormData {
+    email: string;
+    password: string;
+}
 
 const Login = () => {
-    const [showPassword, setShowPassword] = useState(false);
-    const [formData, setFormData] = useState({ email: '', password: '' });
-
-    const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Form submitted:', formData);
-    };
-
     const navigate = useNavigate();
+    const { t } = useLanguage();
+
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>();
+
+    const onSubmit = async (data: LoginFormData) => {
+        try {
+            console.log('Form submitted:', data);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        } catch (error) {
+            console.error('Login error:', error);
+        }
+    };
 
     const handleRegisterClick = () => {
         navigate('/register');
     };
 
     return (
-        <div className="min-h-screen flex relative overflow-hidden">
-
+        <div className="min-h-screen  flex relative overflow-hidden">
             <div
                 aria-hidden
                 className="pointer-events-none fixed inset-0 -z-10"
@@ -41,82 +48,63 @@ const Login = () => {
                 />
             </div>
 
-
-            {/* Logo  */}
             <div className="absolute top-4 right-4 z-20 group">
-                <BoxfulLogoBadge />
+                <BoxfulLogoBadge/>
             </div>
-
 
             <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 relative">
                 <div className="max-w-md mx-auto w-full relative z-10">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Bienvenido</h1>
-                    <p className="text-gray-700 mb-8">Por favor ingresa tus credenciales</p>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">{t('welcome')}</h1>
+                    <p className="text-gray-700 mb-8">{t('pleaseEnterCredentials')}</p>
 
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Correo electrónico
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleInputChange}
-                                placeholder="Digite su correo"
-                                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff6139] focus:border-[#ff6139]"
-                                required
-                            />
-                        </div>
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                        <UnifiedInput
+                            name="email"
+                            label={t('email')}
+                            placeholder={t('enterEmail')}
+                            type="email"
+                            register={register}
+                            rules={{
+                                ...validationRules.required('El correo electrónico es requerido'),
+                                ...validationRules.email()
+                            }}
+                            errors={errors}
+                        />
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Contraseña
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    placeholder="Digite su contraseña"
-                                    className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff6139] focus:border-[#ff6139]"
-                                    required
-                                />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2
-                                   text-gray-400 hover:text-gray-600 transition-colors
-                                   focus:outline-none"
-                                    >
-                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                </button>
-                            </div>
-                        </div>
+                        <UnifiedInput
+                            name="password"
+                            label={t('password')}
+                            placeholder={t('enterPassword')}
+                            type="password"
+                            showPasswordToggle={true}
+                            register={register}
+                            rules={validationRules.loginPassword('La contraseña es requerida')}
+                            errors={errors}
+                        />
 
                         <button
                             type="submit"
-                            onClick={handleSubmit}
-                            className="cursor-pointer w-full bg-[#ff6139] hover:bg-[#e5562f] text-white
-                           py-3 px-4 rounded-lg font-medium shadow-md hover:shadow-lg
-                           transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]
-                           focus:ring-2 focus:ring-[#ff6139] focus:ring-offset-2"
+                            disabled={isSubmitting}
+                            className={`w-full text-white py-3 px-4 rounded-lg font-medium shadow-md transform transition-all duration-200 focus:ring-2 focus:ring-[#ff6139] focus:ring-offset-2 ${
+                                isSubmitting
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-[#ff6139] hover:bg-[#e5562f] hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
+                            }`}
                         >
-                            Iniciar sesión
+                            {isSubmitting ? 'Iniciando sesión...' : t('signIn')}
                         </button>
 
                         <div className="text-center">
-                            <span className="text-gray-700">¿Necesitas una cuenta? </span>
+                            <span className="text-gray-700">{t('needAccount')}</span>
                             <button
                                 type="button"
                                 onClick={handleRegisterClick}
                                 className="cursor-pointer text-[#ff6139] hover:text-[#e5562f] font-medium transition-colors duration-200 hover:underline focus:outline-none"
                             >
-                                Regístrate aquí
+                                {t('registerHere')}
                             </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
 
