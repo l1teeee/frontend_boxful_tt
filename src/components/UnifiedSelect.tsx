@@ -40,7 +40,7 @@ export function UnifiedSelect<T extends FieldValues>({
                 render={({ field: { value, onChange } }) => (
                     <Listbox value={value || ''} onChange={onChange}>
                         {({ open }) => (
-                            <div className="relative">
+                            <div className="relative z-50">
                                 <Listbox.Button
                                     className={`w-full px-4 py-3 rounded-lg border bg-white text-left text-gray-900 transition-all focus:outline-none focus:ring-2 ${
                                         hasError
@@ -50,23 +50,23 @@ export function UnifiedSelect<T extends FieldValues>({
                                                 : 'border-gray-200 hover:border-gray-300'
                                     }`}
                                 >
-                  <span className={`${!value ? 'text-gray-400' : ''}`}>
-                    {value || placeholder}
-                  </span>
+                                    <span className={`${!value ? 'text-gray-400' : ''}`}>
+                                        {value || placeholder}
+                                    </span>
                                     <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-transform ${open ? 'rotate-180 text-[#ff6139]' : 'text-gray-400'}`} />
                                 </Listbox.Button>
 
                                 <Transition
                                     as={Fragment}
                                     show={open}
-                                    enter="transition ease-out duration-150"
-                                    enterFrom="opacity-0 scale-95"
-                                    enterTo="opacity-100 scale-100"
-                                    leave="transition ease-in duration-100"
-                                    leaveFrom="opacity-100 scale-100"
-                                    leaveTo="opacity-0 scale-95"
+                                    enter="transition ease-out duration-200"
+                                    enterFrom="opacity-0 translate-y-1"
+                                    enterTo="opacity-100 translate-y-0"
+                                    leave="transition ease-in duration-150"
+                                    leaveFrom="opacity-100 translate-y-0"
+                                    leaveTo="opacity-0 translate-y-1"
                                 >
-                                    <Listbox.Options className="absolute z-50 mt-2 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg focus:outline-none">
+                                    <Listbox.Options className="absolute z-[9999] mt-2 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg focus:outline-none">
                                         {options.map((option) => (
                                             <Listbox.Option
                                                 key={option}

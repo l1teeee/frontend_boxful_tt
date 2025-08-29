@@ -26,7 +26,7 @@ export const validationRules = {
 
     phone: (message = 'Ingresa un número de teléfono válido') => ({
         pattern: {
-            value: /^(\+503|\+504|\+502)\s[726]\d{3}\s?\d{4}$/,
+            value: /^(\+503|\+504|\+502)\s7\d{3}\s?\d{4}$/,
             message,
         },
         minLength: {
@@ -87,5 +87,27 @@ export const validationRules = {
 
             return true;
         }
-    })
+    }),
+
+
+    dateRange: {
+        startDate: (message = 'La fecha de inicio es requerida') => ({
+            required: { value: true, message },
+            validate: (value: Date | null) => {
+                if (!value) return 'Debes seleccionar una fecha de inicio';
+                if (value > new Date()) return 'La fecha de inicio no puede ser futura';
+                return true;
+            }
+        }),
+
+        endDate: (startDate: Date | null, message = 'La fecha de fin es requerida') => ({
+            required: { value: true, message },
+            validate: (value: Date | null) => {
+                if (!value) return 'Debes seleccionar una fecha de fin';
+                if (value > new Date()) return 'La fecha de fin no puede ser futura';
+                if (startDate && value < startDate) return 'La fecha de fin debe ser posterior a la fecha de inicio';
+                return true;
+            }
+        })
+    }
 };

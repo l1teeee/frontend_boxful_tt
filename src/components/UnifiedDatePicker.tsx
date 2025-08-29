@@ -13,7 +13,9 @@ interface UnifiedDatePickerProps<T extends FieldValues> {
     minYear?: number;
     maxYear?: number;
     maxDate?: Date;
+    minDate?: Date;
     className?: string;
+    variant?: 'past' | 'future' | 'custom';
 }
 
 export function UnifiedDatePicker<T extends FieldValues>({
@@ -24,12 +26,47 @@ export function UnifiedDatePicker<T extends FieldValues>({
                                                              rules = {},
                                                              errors,
                                                              minYear = 1940,
-                                                             maxYear = new Date().getFullYear(),
-                                                             maxDate = new Date(),
-                                                             className = ''
+                                                             maxYear = new Date().getFullYear() + 10,
+                                                             maxDate,
+                                                             minDate,
+                                                             className = '',
+                                                             variant = 'custom'
                                                          }: UnifiedDatePickerProps<T>) {
     const error = errors?.[name];
     const hasError = !!error;
+
+    const getDateConstraints = () => {
+        const today = new Date();
+
+        switch (variant) {
+            case 'past':
+                return {
+                    minDate: minDate || new Date(minYear, 0, 1),
+                    maxDate: maxDate || today,
+                    minYear: minYear,
+                    maxYear: today.getFullYear()
+                };
+
+            case 'future':
+                return {
+                    minDate: minDate || today,
+                    maxDate: maxDate || new Date(maxYear, 11, 31),
+                    minYear: today.getFullYear(),
+                    maxYear: maxYear
+                };
+
+            case 'custom':
+            default:
+                return {
+                    minDate: minDate,
+                    maxDate: maxDate,
+                    minYear: minYear,
+                    maxYear: maxYear
+                };
+        }
+    };
+
+    const dateConstraints = getDateConstraints();
 
     const inputClassName = `w-full px-4 py-3 border rounded-lg bg-white placeholder-gray-400 text-gray-900 transition-all duration-200 focus:outline-none focus:ring-2 ${
         hasError
@@ -54,13 +91,14 @@ export function UnifiedDatePicker<T extends FieldValues>({
                         dateFormat="dd/MM/yyyy"
                         showYearDropdown
                         scrollableYearDropdown
-                        yearDropdownItemNumber={maxYear - minYear + 1}
+                        yearDropdownItemNumber={dateConstraints.maxYear - dateConstraints.minYear + 1}
                         placeholderText={placeholder}
                         wrapperClassName="w-full"
                         className={inputClassName}
                         calendarClassName="rounded-lg shadow-lg border border-gray-200 bg-white"
                         popperClassName="z-50"
-                        maxDate={maxDate}
+                        maxDate={dateConstraints.maxDate}
+                        minDate={dateConstraints.minDate}
                         showMonthDropdown
                         dropdownMode="select"
                     />
