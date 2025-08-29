@@ -9,18 +9,19 @@ interface AnimatedRoutesProps {
 
 export const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({ children }) => {
     const location = useLocation();
+    const routeKey = location.pathname + location.search + location.hash;
 
     return (
         <AnimatePresence mode="wait" initial={true}>
             <motion.div
-                key={location.pathname}
+                key={routeKey}
                 initial={pageTransitions.initial}
                 animate={pageTransitions.animate}
                 exit={pageTransitions.exit}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 className="min-h-screen overflow-hidden"
             >
-                <Routes location={location}>
+                <Routes location={location} key={routeKey}>
                     {children}
                 </Routes>
             </motion.div>
