@@ -3,10 +3,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from '@/components/Sidebar';
 import CrearOrden from '@/components/Services/CrearOrden';
 import Historial from '@/components/Services/Historial';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'crear' | 'historial'>('crear');
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const navigate = useNavigate();
 
     const renderContent = () => {
         switch (activeTab) {
@@ -26,6 +28,10 @@ const Dashboard: React.FC = () => {
                 setActiveTab={setActiveTab}
                 collapsed={sidebarCollapsed}
                 setCollapsed={setSidebarCollapsed}
+                onLogout={() => {
+                    localStorage.removeItem('token');
+                    navigate('/');
+                }}
             />
 
             <main className="flex-1 overflow-y-auto bg-gray-50">
