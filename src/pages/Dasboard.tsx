@@ -4,6 +4,7 @@ import Sidebar from '@/components/Sidebar';
 import CrearOrden from '@/components/Services/CrearOrden';
 import Historial from '@/components/Services/Historial';
 import { useNavigate } from 'react-router-dom';
+import { pageTransitions } from '@/animations/pageTransitions';
 
 const Dashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'crear' | 'historial'>('crear');
@@ -40,11 +41,11 @@ const Dashboard: React.FC = () => {
                         <AnimatePresence mode="wait" initial={false}>
                             <motion.div
                                 key={activeTab}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
+                                initial={pageTransitions.initial}
+                                animate={pageTransitions.animate}
+                                exit={pageTransitions.exit}
                                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                className="min-h-full"
+                                className="min-h-full overflow-hidden"
                             >
                                 {renderContent()}
                             </motion.div>
