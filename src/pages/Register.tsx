@@ -14,6 +14,7 @@ import {
     ErrorModal,
     ModalStyles
 } from '@/components/ConfirmationModals';
+import videoLogin from "@/assets/entrega.mp4";
 
 interface FormData {
     firstName: string;
@@ -128,7 +129,7 @@ const Register = () => {
                 <div className="absolute bottom-0 left-0 w-2/3 h-2/3 bg-gradient-to-tr from-[#ffab9115] via-[#ff8a6530] to-transparent animate-gradient-shift filter blur-xl" style={{ animationDelay: '4s' }} />
 
                 <div className="hidden m-22 lg:flex lg:w-1/2 bg-white rounded-2xl overflow-hidden relative">
-                    <video className="absolute inset-0 w-full h-full object-cover" src="src/assets/register.mp4" autoPlay muted loop playsInline />
+                    <video className="absolute inset-0 w-full h-full object-cover" src={videoLogin} autoPlay muted loop playsInline />
                     <div aria-hidden className="absolute inset-0 bg-black/45 pointer-events-none" />
                 </div>
 

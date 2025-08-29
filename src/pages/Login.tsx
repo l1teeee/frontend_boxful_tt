@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { UnifiedInput } from '@/components/UnifiedInput';
 import { validationRules } from '@/utils/validate/validationRules';
+import videoRegister from "@/assets/register.mp4";
 
 interface LoginFormData {
     email: string;
@@ -111,7 +112,7 @@ const Login = () => {
             <div className="hidden m-22 lg:flex lg:w-1/2 bg-white rounded-2xl overflow-hidden relative">
                 <video
                     className="absolute inset-0 w-full h-full object-cover"
-                    src="src/assets/entrega.mp4"
+                    src={videoRegister}
                     autoPlay
                     muted
                     loop

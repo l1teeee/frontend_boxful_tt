@@ -8,6 +8,9 @@ type Props = {
     imgSrc?: string;
     alt?: string;
 };
+import boxImg from "@/assets/box.webp";
+
+
 
 const toCss = (v?: number | string) => (typeof v === 'number' ? `${v}px` : v);
 
@@ -15,8 +18,8 @@ const BoxfulLogoBadge: React.FC<Props> = ({
                                               size,
                                               width,
                                               height,
-                                              iconScale = 0.45,                  // <- icono un poco más chico
-                                              imgSrc = 'src/assets/box.webp',
+                                              iconScale = 0.45,
+                                              imgSrc = boxImg,
                                               alt = 'Boxful Logo',
                                           }) => {
     const defaultSize = 'clamp(48px,8vw,72px)'; // <- tamaño predeterminado más pequeño
