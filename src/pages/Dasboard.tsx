@@ -9,7 +9,6 @@ import { pageTransitions } from '@/animations/pageTransitions';
 const Dashboard: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'crear' | 'historial'>('crear');
     const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const navigate = useNavigate();
 
     const renderContent = () => {
         switch (activeTab) {
@@ -29,10 +28,6 @@ const Dashboard: React.FC = () => {
                 setActiveTab={setActiveTab}
                 collapsed={sidebarCollapsed}
                 setCollapsed={setSidebarCollapsed}
-                onLogout={() => {
-                    localStorage.removeItem('token');
-                    navigate('/');
-                }}
             />
 
             <main className="flex-1 overflow-y-auto bg-gray-50">
@@ -53,6 +48,7 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
             </main>
+
         </div>
     );
 };

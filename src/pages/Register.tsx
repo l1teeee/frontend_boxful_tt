@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import AuthService from '@/services/auth/authService';
 import BoxfulLogoBadge from '@/components/BoxfulLogoBadge';
 import { UnifiedInput } from '@/components/UnifiedInput';
 import { UnifiedSelect } from '@/components/UnifiedSelect';
@@ -31,12 +32,14 @@ const Register = () => {
     const navigate = useNavigate();
     const { t, language } = useLanguage();
 
-    // Estados para los modales
+    // Estados locales para manejar el loading y modales
+    const [loading, setLoading] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [formData, setFormData] = useState<FormData | null>(null);
 
     const { register, handleSubmit, control, watch, formState: { errors, isSubmitting } } = useForm<FormData>();
 
@@ -51,17 +54,8 @@ const Register = () => {
         try {
             console.log('Form submitted:', data);
 
-            // Simulamos una validación del teléfono
-            if (!data.phone || data.phone.length < 8) {
-                setErrorMessage(
-                    language === 'es'
-                        ? 'El número de teléfono no es válido'
-                        : 'Phone number is not valid'
-                );
-                setShowErrorModal(true);
-                return;
-            }
-
+            // Guardar los datos del formulario y mostrar modal de confirmación
+            setFormData(data);
             setPhoneNumber(data.phone);
             setShowConfirmationModal(true);
 
@@ -79,33 +73,60 @@ const Register = () => {
     const handleConfirmPhone = async () => {
         setShowConfirmationModal(false);
 
+        if (!formData) return;
+
+        setLoading(true);
+
         try {
-            // Aquí irían las llamadas a la API para registrar al usuario
-            // Simulamos una llamada a la API
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // Usar AuthService directamente
+            const response = await AuthService.register({
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                sex: formData.sex,
+                birthDate: formData.birthDate!,
+                email: formData.email,
+                phone: formData.phone,
+                password: formData.password,
+                confirmPassword: formData.confirmPassword,
+            });
 
-            // Si todo sale bien, mostramos el modal de éxito
-            setShowSuccessModal(true);
+            if (response.success) {
+                // Si todo sale bien, mostrar el modal de éxito
+                setShowSuccessModal(true);
 
-            // Ocultamos el modal de éxito después de 3 segundos y redirigimos
-            setTimeout(() => {
-                setShowSuccessModal(false);
-                // navigate('/dashboard'); // Descomenta para redirigir
-            }, 3000);
+                // Redirigir después de mostrar el éxito
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                    navigate('/'); // o la ruta que corresponda después del registro
+                }, 3000);
+
+            } else {
+                // Si hay error en el registro, mostrar modal de error
+                setErrorMessage(
+                    response.error?.message ||
+                    (language === 'es'
+                        ? 'Error al crear la cuenta. Verifica tus datos e inténtalo de nuevo.'
+                        : 'Error creating account. Check your data and try again.')
+                );
+                setShowErrorModal(true);
+            }
 
         } catch (error) {
-            // Si hay error en el registro, mostramos modal de error
+            console.error('Registration API error:', error);
             setErrorMessage(
                 language === 'es'
-                    ? 'Error al crear la cuenta. Verifica tus datos e inténtalo de nuevo.'
-                    : 'Error creating account. Check your data and try again.'
+                    ? 'Error de conexión. Verifica tu conexión a internet e inténtalo de nuevo.'
+                    : 'Connection error. Check your internet connection and try again.'
             );
             setShowErrorModal(true);
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleCancelConfirmation = () => {
         setShowConfirmationModal(false);
+        setFormData(null);
     };
 
     const handleCloseError = () => {
@@ -250,14 +271,14 @@ const Register = () => {
 
                             <button
                                 type="submit"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || loading}
                                 className={`w-full text-white py-3 px-4 rounded-lg font-medium shadow-md transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#ff6139] focus:ring-offset-2 ${
-                                    isSubmitting
+                                    isSubmitting || loading
                                         ? 'bg-gray-400 cursor-not-allowed'
                                         : 'bg-[#ff6139] hover:bg-[#e5562f] hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
                                 }`}
                             >
-                                {isSubmitting ? 'Registrando...' : t('register')}
+                                {isSubmitting || loading ? 'Registrando...' : t('register')}
                             </button>
 
                             <div className="text-center">
