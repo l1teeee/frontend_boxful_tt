@@ -11,7 +11,7 @@ export const AnimatedRoutes: React.FC<AnimatedRoutesProps> = ({ children }) => {
     const location = useLocation();
 
     return (
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={true}>
             <motion.div
                 key={location.pathname}
                 initial={pageTransitions.initial}
