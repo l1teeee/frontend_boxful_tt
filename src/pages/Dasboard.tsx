@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Sidebar from '@/components/Sidebar';
 import CrearOrden from '@/components/Services/CrearOrden';
 import Historial from '@/components/Services/Historial';
-import { useNavigate } from 'react-router-dom';
 import { pageTransitions } from '@/animations/pageTransitions';
 
 const Dashboard: React.FC = () => {

@@ -13,9 +13,6 @@ export interface LoginCredentials {
 }
 
 export class AuthService {
-    /**
-     * Registrar un nuevo usuario (NO guarda token, solo crea cuenta)
-     */
     static async register(userData: UserData): Promise<ApiResponse<AuthResponse>> {
         const validationError = AuthValidators.validateRegistrationData(userData);
         if (validationError) {
@@ -38,9 +35,6 @@ export class AuthService {
         }
     }
 
-    /**
-     * Iniciar sesión (SOLO el login guarda token)
-     */
     static async login(credentials: LoginCredentials): Promise<ApiResponse<AuthResponse>> {
         try {
             const response = await httpClient.post<AuthResponse>(
@@ -49,7 +43,10 @@ export class AuthService {
             );
 
             if (AuthResponseUtils.hasToken(response)) {
-                AuthStorage.saveAuthData(response.data!.token!, response.data!.user);
+                const { token, user } = response.data;
+                if (token && user?.id) {
+                    AuthStorage.saveAuthData(token, user, user.id);
+                }
             }
 
             return response;
@@ -59,6 +56,7 @@ export class AuthService {
             );
         }
     }
+
 
     /**
      * Cerrar sesión

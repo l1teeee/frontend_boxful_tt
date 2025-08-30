@@ -2,14 +2,20 @@ import type { User } from '@/types/api.types';
 
 export class AuthStorage {
     private static readonly TOKEN_KEY = 'auth_token';
-    private static readonly USER_KEY = 'user_data';
+    private static readonly USER_KEY = 'auth_user';
+    private static readonly USER_ID_KEY = 'auth_user_id';
 
     /**
      * Guardar datos de autenticación
      */
-    static saveAuthData(token: string, user: User): void {
+    static saveAuthData(token: string, user: User, userId: string): void {
         localStorage.setItem(this.TOKEN_KEY, token);
         localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        localStorage.setItem(this.USER_ID_KEY, userId);
+    }
+
+    static getUserId(): string | null {
+        return localStorage.getItem(this.USER_ID_KEY);
     }
 
     /**
@@ -40,5 +46,6 @@ export class AuthStorage {
     static clearAuthData(): void {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.USER_KEY);
+        localStorage.removeItem(this.USER_ID_KEY);
     }
 }

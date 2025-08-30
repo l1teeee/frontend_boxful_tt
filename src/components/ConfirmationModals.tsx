@@ -13,7 +13,10 @@ interface SuccessModalProps {
     language: 'es' | 'en';
     title?: string;
     message?: string;
-    type?: 'login' | 'register';
+    type?: 'login' | 'register' | 'order' | 'custom';
+    onClose?: () => void;
+    autoClose?: boolean;
+    autoCloseDelay?: number;
 }
 
 interface ErrorModalProps {
@@ -21,6 +24,7 @@ interface ErrorModalProps {
     language: 'es' | 'en';
     title?: string;
     message?: string;
+    type?: 'general' | 'validation' | 'network' | 'custom';
     onClose: () => void;
 }
 
@@ -76,33 +80,61 @@ export const PhoneConfirmationModal: React.FC<ConfirmationModalProps> = ({
     );
 };
 
-// Modal de Éxito
+// Modal de Éxito Mejorado
 export const SuccessModal: React.FC<SuccessModalProps> = ({
                                                               isOpen,
                                                               language,
                                                               title,
                                                               message,
-                                                              type = 'register'
+                                                              type = 'register',
+                                                              onClose,
+                                                              autoClose = false,
+                                                              autoCloseDelay = 3000
                                                           }) => {
+    React.useEffect(() => {
+        if (isOpen && autoClose && onClose) {
+            const timer = setTimeout(() => {
+                onClose();
+            }, autoCloseDelay);
+
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, autoClose, autoCloseDelay, onClose]);
+
     if (!isOpen) return null;
 
     // Mensajes por defecto basados en el tipo y idioma
     const getDefaultContent = () => {
-        if (type === 'login') {
-            return {
-                title: language === 'es' ? '¡Inicio de sesión exitoso!' : 'Login successful!',
-                message: language === 'es'
-                    ? 'Has iniciado sesión correctamente'
-                    : 'You have logged in successfully'
-            };
-        } else {
-            // type === 'register'
-            return {
-                title: language === 'es' ? '¡Registro exitoso!' : 'Registration successful!',
-                message: language === 'es'
-                    ? 'Tu cuenta ha sido creada correctamente'
-                    : 'Your account has been created successfully'
-            };
+        switch (type) {
+            case 'login':
+                return {
+                    title: language === 'es' ? '¡Inicio de sesión exitoso!' : 'Login successful!',
+                    message: language === 'es'
+                        ? 'Has iniciado sesión correctamente'
+                        : 'You have logged in successfully'
+                };
+            case 'order':
+                return {
+                    title: language === 'es' ? '¡Orden creada exitosamente!' : 'Order created successfully!',
+                    message: language === 'es'
+                        ? 'Tu orden ha sido creada y procesada correctamente'
+                        : 'Your order has been created and processed successfully'
+                };
+            case 'register':
+                return {
+                    title: language === 'es' ? '¡Registro exitoso!' : 'Registration successful!',
+                    message: language === 'es'
+                        ? 'Tu cuenta ha sido creada correctamente'
+                        : 'Your account has been created successfully'
+                };
+            case 'custom':
+            default:
+                return {
+                    title: language === 'es' ? '¡Éxito!' : 'Success!',
+                    message: language === 'es'
+                        ? 'La operación se completó correctamente'
+                        : 'Operation completed successfully'
+                };
         }
     };
 
@@ -126,53 +158,105 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                         {title || defaultContent.title}
                     </h3>
-                    <p className="text-gray-500">
+                    <p className="text-gray-500 mb-6">
                         {message || defaultContent.message}
                     </p>
+                    {onClose && (
+                        <button
+                            onClick={onClose}
+                            className="w-full bg-green-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors duration-200"
+                        >
+                            {language === 'es' ? 'Cerrar' : 'Close'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
     );
 };
 
-// Modal de Error
+// Modal de Error Mejorado
 export const ErrorModal: React.FC<ErrorModalProps> = ({
                                                           isOpen,
                                                           language,
                                                           title,
                                                           message,
+                                                          type = 'general',
                                                           onClose
                                                       }) => {
     if (!isOpen) return null;
 
-    const defaultTitle = language === 'es' ? 'Error en el registro' : 'Registration error';
-    const defaultMessage = language === 'es'
-        ? 'Ha ocurrido un error durante el registro. Por favor, inténtalo de nuevo.'
-        : 'An error occurred during registration. Please try again.';
+    // Mensajes por defecto basados en el tipo y idioma
+    const getDefaultContent = () => {
+        switch (type) {
+            case 'validation':
+                return {
+                    title: language === 'es' ? 'Campos requeridos' : 'Required fields',
+                    message: language === 'es'
+                        ? 'Por favor, completa todos los campos obligatorios antes de continuar'
+                        : 'Please complete all required fields before continuing'
+                };
+            case 'network':
+                return {
+                    title: language === 'es' ? 'Error de conexión' : 'Connection error',
+                    message: language === 'es'
+                        ? 'No se pudo conectar con el servidor. Verifica tu conexión a internet'
+                        : 'Could not connect to server. Please check your internet connection'
+                };
+            case 'general':
+            default:
+                return {
+                    title: language === 'es' ? 'Error' : 'Error',
+                    message: language === 'es'
+                        ? 'Ha ocurrido un error. Por favor, inténtalo de nuevo'
+                        : 'An error occurred. Please try again'
+                };
+        }
+    };
+
+    const defaultContent = getDefaultContent();
+
+    // Icono específico según el tipo de error
+    const getIcon = () => {
+        if (type === 'validation') {
+            return (
+                <svg className="h-8 w-8 text-orange-500 animate-error-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            );
+        }
+
+        return (
+            <svg className="h-8 w-8 text-red-500 animate-error-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+            </svg>
+        );
+    };
+
+    const bgColor = type === 'validation' ? 'bg-orange-100' : 'bg-red-100';
+    const buttonColor = type === 'validation' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-500 hover:bg-red-600';
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
             <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform animate-scale-in">
                 <div className="text-center">
-                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
-                        <svg className="h-8 w-8 text-red-500 animate-error-shake" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
-                            />
-                        </svg>
+                    <div className={`mx-auto flex items-center justify-center h-16 w-16 rounded-full ${bgColor} mb-4`}>
+                        {getIcon()}
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        {title || defaultTitle}
+                        {title || defaultContent.title}
                     </h3>
                     <p className="text-gray-500 mb-6">
-                        {message || defaultMessage}
+                        {message || defaultContent.message}
                     </p>
                     <button
                         onClick={onClose}
-                        className="w-full bg-red-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-600 transition-colors duration-200"
+                        className={`w-full ${buttonColor} text-white py-2 px-4 rounded-lg font-medium transition-colors duration-200`}
                     >
                         {language === 'es' ? 'Cerrar' : 'Close'}
                     </button>
@@ -182,7 +266,7 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
     );
 };
 
-// Componente de Estilos (para usar en el componente padre)
+// Componente de Estilos
 export const ModalStyles: React.FC = () => (
     <style>{`
         @keyframes scale-in {

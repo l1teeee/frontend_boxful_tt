@@ -9,6 +9,7 @@ import {
 import AuthService from '@/services/auth/authService';
 import { useLogout } from '@/hooks/useLogout';
 import boxImg from "@/assets/box.webp";
+import {AuthStorage} from "@/services/auth";
 
 interface SidebarProps {
     activeTab: 'crear' | 'historial';
@@ -78,29 +79,36 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {/* User Profile */}
                 <div className={`py-4 border-b border-gray-100 transition-all duration-300 ${collapsed ? 'px-2' : 'px-4'}`}>
                     <div
-                        className={`flex items-center p-3 rounded-xl transition-all duration-200 hover:bg-gray-50 cursor-pointer group ${
-                            collapsed ? 'justify-center' : 'space-x-3'
+                        className={`rounded-xl transition-all duration-200 hover:bg-gray-50 cursor-pointer group ${
+                            collapsed ? 'p-2' : 'p-3'
                         }`}
                         title={collapsed ? displayName : undefined}
                     >
-                        <div className={`bg-gradient-to-br from-[#ff6139] to-[#e5562f] rounded-lg flex items-center justify-center text-white font-semibold shadow-sm group-hover:shadow-md transition-all duration-200 ${
-                            collapsed ? 'w-8 h-8 text-xs' : 'w-9 h-9 text-sm'
-                        }`}>
-                            {getUserInitial(displayName)}
+                        {/* Línea superior: Icono y Nombre */}
+                        <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'}`}>
+                            <div className={`bg-gradient-to-br from-[#ff6139] to-[#e5562f] rounded-lg flex items-center justify-center text-white font-semibold shadow-sm group-hover:shadow-md transition-all duration-200 flex-shrink-0 ${
+                                collapsed ? 'w-8 h-8 text-xs' : 'w-9 h-9 text-sm'
+                            }`}>
+                                {getUserInitial(displayName)}
+                            </div>
+                            {!collapsed && (
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate group-hover:text-[#ff6139] transition-colors duration-200">
+                                        {displayName}
+                                    </p>
+                                </div>
+                            )}
                         </div>
+
                         {!collapsed && (
-                            <div className="flex-1 min-w-0 opacity-100 transition-opacity duration-300">
-                                <p className="text-sm font-medium text-gray-900 truncate group-hover:text-[#ff6139] transition-colors duration-200">
-                                    {displayName}
-                                </p>
+                            <div className="mt-2">
                                 <p className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors duration-200">
-                                    En línea
+                                    ID: {AuthStorage.getUserId()}
                                 </p>
                             </div>
                         )}
                     </div>
                 </div>
-
                 {/* Navigation Menu */}
                 <nav className="flex-1 px-4 py-6 space-y-2">
                     {menuItems.map(item => (

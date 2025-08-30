@@ -1,5 +1,5 @@
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = never> {
     success: boolean;
     data?: T;
     error?: ApiError;
@@ -14,19 +14,19 @@ export interface ApiError {
 export interface AuthResponse {
     message: string;
     user: User;
-    token?: string;
+    token: string;
 }
 
 export interface User {
-    id: number;
+    id: string;
     nombre: string;
     apellido: string;
     email: string;
     sexo: string;
-    fechaNacimiento: string | Date;
+    fechaNacimiento: string;
     telefono: string;
-    createdAt?: string | Date;
 }
+
 
 export interface RegisterRequest {
     nombre: string;

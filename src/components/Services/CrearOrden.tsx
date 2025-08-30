@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import React, {useEffect, useState } from 'react';
+import {useForm, useWatch} from 'react-hook-form';
 import { Plus, Trash2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UnifiedInput } from '@/components/UnifiedInput';
 import { UnifiedDatePicker } from '@/components/UnifiedDatePicker';
 import { UnifiedPhoneInput } from '@/components/UnifiedPhone';
 import { UnifiedSelect } from '@/components/UnifiedSelect';
-
+import { SuccessModal, ErrorModal, ModalStyles } from '@/components/ConfirmationModals';
+import type { CrearOrdenFormData, Product } from '@/types/api.order';
+import { departamentosMunicipios} from '@/data/departamentosMunicipio';
 import { validationRules } from '@/utils/validate/validationRules';
+
 // Configuración de animaciones
 const stepTransitions = {
     initial: { opacity: 0, y: 20 },
@@ -15,68 +18,213 @@ const stepTransitions = {
     exit: { opacity: 0, y: -20 }
 };
 
-interface CrearOrdenFormData {
-    estimatedDate?: Date;
-    pickupAddress: string;
-    suggestedDate: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    message: string;
-    referencePoint: string;
-    information: string;
-    destinationAddress: string
-    department: string;
-    municipality: string;
-    products: Product[];
-    totalWeight: number;
-    totalContent: string;
-    totalPrice: number;
-    totalPriceWithTax: number;
-    totalPriceWithTaxFormatted: string;
-    totalPriceFormatted: string;
-    totalPriceWithTaxWithDiscount: number;
-}
-
-interface Product {
-    id: string;
-    length: string;
-    height: string;
-    width: string;
-    weight: string;
-    content: string;
-}
-
 const CrearOrden: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(1);
-    const { register, control, handleSubmit, formState: { errors }, reset } = useForm<CrearOrdenFormData>();
+    const { register, control, formState: { errors }, reset, setValue, trigger, getValues } = useForm<CrearOrdenFormData>();
 
-    const onSubmit = (data: CrearOrdenFormData) => {
-        console.log('Datos del formulario:', data);
-        alert('¡Orden creada exitosamente!');
-        reset();
-        setCurrentStep(1);
+    // Estados para los modales
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalMessage, setModalMessage] = useState('');
+    const [errorType, setErrorType] = useState<'validation' | 'network' | 'general'>('general');
+
+    // Funciones para manejar los modales
+    const showValidationError = (missingFields?: string[]) => {
+        setErrorType('validation');
+
+        if (missingFields && missingFields.length > 0) {
+            const fieldNames: Record<string, string> = {
+                'pickupAddress': 'Dirección de recolección',
+                'estimatedDate': 'Fecha programada',
+                'firstName': 'Nombres',
+                'lastName': 'Apellidos',
+                'email': 'Correo electrónico',
+                'phone': 'Teléfono',
+                'destinationAddress': 'Dirección del destinatario',
+                'department': 'Departamento',
+                'municipality': 'Municipio',
+                'referencePoint': 'Punto de referencia',
+                'information': 'Indicaciones'
+            };
+
+            const missingFieldNames = missingFields.map(field => fieldNames[field] || field);
+            setModalTitle('Campos requeridos');
+            setModalMessage(`Por favor completa los siguientes campos: ${missingFieldNames.join(', ')}`);
+        } else {
+            setModalTitle('');
+            setModalMessage('');
+        }
+
+        setShowErrorModal(true);
+    };
+
+    const showProductValidationError = () => {
+        setErrorType('validation');
+        setModalTitle('Productos incompletos');
+        setModalMessage('Por favor completa todos los campos de los productos (largo, alto, ancho, peso y contenido).');
+        setShowErrorModal(true);
+    };
+
+    const showOrderSuccess = (orderNumber?: string) => {
+        if (orderNumber) {
+            setModalTitle('¡Orden creada exitosamente!');
+            setModalMessage(`Tu orden #${orderNumber} ha sido creada y está siendo procesada. Recibirás una notificación cuando un conductor la tome.`);
+        } else {
+            setModalTitle('');
+            setModalMessage('');
+        }
+        setShowSuccessModal(true);
+    };
+
+    const handleCloseError = () => {
+        setShowErrorModal(false);
+        setModalTitle('');
+        setModalMessage('');
+    };
+
+    const handleCloseSuccess = () => {
+        setShowSuccessModal(false);
+        setModalTitle('');
+        setModalMessage('');
+    };
+
+    // Función para validar el paso 1
+    const validateStep1 = async () => {
+        const fieldsToValidate = [
+            'pickupAddress',
+            'estimatedDate',
+            'firstName',
+            'lastName',
+            'email',
+            'phone',
+            'destinationAddress',
+            'department',
+            'municipality',
+            'referencePoint',
+            'information'
+        ] as const;
+
+        const isValid = await trigger(fieldsToValidate);
+
+        if (!isValid) {
+            // Encontrar los campos específicos que fallan la validación
+            const formValues = getValues();
+            const missingFields = fieldsToValidate.filter(field => {
+                const value = formValues[field];
+                return !value || (typeof value === 'string' && value.trim() === '');
+            });
+
+            showValidationError(missingFields);
+            return false;
+        }
+        return true;
+    };
+
+    // Función para validar productos
+    const validateProducts = (products: Product[]) => {
+        if (products.length === 0) {
+            setErrorType('validation');
+            setModalTitle('Sin productos');
+            setModalMessage('Debes agregar al menos un producto para crear la orden.');
+            setShowErrorModal(true);
+            return false;
+        }
+
+        const emptyProducts = products.filter(product =>
+            !product.length.trim() ||
+            !product.height.trim() ||
+            !product.width.trim() ||
+            !product.weight.trim() ||
+            !product.content.trim()
+        );
+
+        if (emptyProducts.length > 0) {
+            showProductValidationError();
+            return false;
+        }
+
+        return true;
+    };
+
+    const handleNextStep = async () => {
+        if (currentStep === 1) {
+            const isValid = await validateStep1();
+            if (isValid) {
+                setCurrentStep(2);
+            }
+        }
+    };
+
+    const handleFinalSubmit = async (products: Product[]) => {
+        try {
+            // Validar paso 1
+            const step1Valid = await validateStep1();
+            if (!step1Valid) {
+                setCurrentStep(1);
+                return;
+            }
+
+            // Validar productos
+            const productsValid = validateProducts(products);
+            if (!productsValid) {
+                return;
+            }
+
+            // Si todo está válido, proceder con el envío
+            const formData = getValues();
+            const finalData = {
+                ...formData,
+                products: products
+            };
+
+            console.log('Datos del formulario:', finalData);
+
+            // Simular creación de orden exitosa
+            const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
+            showOrderSuccess(orderNumber);
+
+            // Limpiar formulario después del éxito (con delay)
+            setTimeout(() => {
+                reset();
+                setCurrentStep(1);
+                handleCloseSuccess();
+            }, 4000);
+
+        } catch (error) {
+            // Manejar errores de red o del servidor
+            setErrorType('network');
+            setModalTitle('Error al crear orden');
+            setModalMessage('No se pudo crear la orden. Verifica tu conexión a internet e inténtalo de nuevo.');
+            setShowErrorModal(true);
+        }
     };
 
     const Step1 = () => {
-        const departamentos = [
-            'Ahuachapán', 'Cabañas', 'Chalatenango', 'Cuscatlán', 'La Libertad',
-            'La Paz', 'La Unión', 'Morazán', 'San Miguel', 'San Salvador',
-            'San Vicente', 'Santa Ana', 'Sonsonate', 'Usulután'
-        ];
+        const departamentos = Object.keys(departamentosMunicipios);
 
-        const municipios = [
-            'Aguilares', 'Apopa', 'Ayutuxtepeque', 'Ciudad Delgado', 'Cuscatancingo',
-            'El Paisnal', 'Guazapa', 'Ilopango', 'Mejicanos', 'Nejapa',
-            'Panchimalco', 'Rosario de Mora', 'San Marcos', 'San Martín',
-            'San Salvador', 'Santiago Texacuangos', 'Santo Tomás', 'Soyapango',
-            'Tonacatepeque', 'Antiguo Cuscatlán', 'Chiltiupán', 'Colón',
-            'Comasagua', 'Huizúcar', 'Jayaque', 'Jicalapa', 'La Libertad',
-            'Nueva San Salvador', 'Opico', 'Quezaltepeque', 'Sacacoyo',
-            'San José Villanueva', 'San Matías', 'San Pablo Tacachico',
-            'Talnique', 'Tamanique', 'Teotepeque', 'Tepecoyo', 'Zaragoza'
-        ];
+        const selectedDepartment = useWatch({
+            control,
+            name: 'department'
+        });
+
+        const availableMunicipios = selectedDepartment
+            ? departamentosMunicipios[selectedDepartment as keyof typeof departamentosMunicipios] || []
+            : [];
+
+        useEffect(() => {
+            if (selectedDepartment) {
+                setValue('municipality', '');
+                if (selectedDepartment === 'San Salvador') {
+                    setValue('municipality', 'Soyapango');
+                }
+            }
+        }, [selectedDepartment, setValue]);
+
+        useEffect(() => {
+            setValue('department', 'San Salvador');
+            setValue('municipality', 'Soyapango');
+        }, [setValue]);
 
         return (
             <motion.div
@@ -180,8 +328,8 @@ const CrearOrden: React.FC = () => {
                     <UnifiedSelect
                         name="municipality"
                         label="Municipio"
-                        placeholder="San Salvador"
-                        options={municipios}
+                        placeholder="Seleccionar municipio"
+                        options={availableMunicipios}
                         control={control}
                         rules={validationRules.required('El municipio es requerido')}
                         errors={errors}
@@ -215,7 +363,8 @@ const CrearOrden: React.FC = () => {
 
                 <div className="flex justify-end mt-6">
                     <button
-                        onClick={() => setCurrentStep(2)}
+                        type="button"
+                        onClick={handleNextStep}
                         className="bg-[#e5562f] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#d4502a] transition-colors"
                     >
                         Siguiente →
@@ -224,7 +373,6 @@ const CrearOrden: React.FC = () => {
             </motion.div>
         );
     };
-
 
     const Step2 = () => {
         const [products, setProducts] = useState<Product[]>([
@@ -237,7 +385,6 @@ const CrearOrden: React.FC = () => {
                 content: ''
             }
         ]);
-
         const addProduct = () => {
             const newProduct: Product = {
                 id: Date.now().toString(),
@@ -306,6 +453,7 @@ const CrearOrden: React.FC = () => {
                             </span>
                                 {products.length > 1 && (
                                     <button
+                                        type="button"
                                         onClick={() => removeProduct(product.id)}
                                         className="text-red-500 hover:text-red-700 transition-colors p-1"
                                     >
@@ -317,7 +465,7 @@ const CrearOrden: React.FC = () => {
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                                 <div>
                                     <label className="block text-xs font-medium text-gray-600 mb-1">
-                                        Largo
+                                        Largo <span className="text-red-500">*</span>
                                     </label>
                                     <div className="flex items-center">
                                         <input
@@ -333,7 +481,7 @@ const CrearOrden: React.FC = () => {
 
                                 <div>
                                     <label className="block text-xs font-medium text-gray-600 mb-1">
-                                        Alto
+                                        Alto <span className="text-red-500">*</span>
                                     </label>
                                     <div className="flex items-center">
                                         <input
@@ -349,7 +497,7 @@ const CrearOrden: React.FC = () => {
 
                                 <div>
                                     <label className="block text-xs font-medium text-gray-600 mb-1">
-                                        Ancho
+                                        Ancho <span className="text-red-500">*</span>
                                     </label>
                                     <div className="flex items-center">
                                         <input
@@ -365,7 +513,7 @@ const CrearOrden: React.FC = () => {
 
                                 <div>
                                     <label className="block text-xs font-medium text-gray-600 mb-1">
-                                        Peso en libras
+                                        Peso en libras <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="number"
@@ -379,7 +527,7 @@ const CrearOrden: React.FC = () => {
 
                             <div>
                                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                                    Contenido
+                                    Contenido <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -394,6 +542,7 @@ const CrearOrden: React.FC = () => {
                 </div>
 
                 <button
+                    type="button"
                     onClick={addProduct}
                     className="mt-4 text-[#e5562f] hover:bg-orange-50 px-4 py-2 rounded-lg transition-colors flex items-center border border-[#e5562f] border-dashed hover:border-solid"
                 >
@@ -426,6 +575,7 @@ const CrearOrden: React.FC = () => {
                                             </div>
                                         </div>
                                         <button
+                                            type="button"
                                             onClick={() => removeProduct(product.id)}
                                             className="text-red-500 hover:text-red-700 transition-colors p-1 ml-2"
                                         >
@@ -474,13 +624,15 @@ const CrearOrden: React.FC = () => {
 
                 <div className="flex justify-between mt-6">
                     <button
+                        type="button"
                         onClick={() => setCurrentStep(1)}
                         className="flex items-center text-gray-600 hover:text-[#e5562f] transition-colors px-4 py-2"
                     >
                         ← Regresar
                     </button>
                     <button
-                        onClick={handleSubmit(onSubmit)}
+                        type="button"
+                        onClick={() => handleFinalSubmit(products)}
                         className="bg-[#e5562f] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#d4502a] transition-colors"
                     >
                         Enviar
@@ -557,6 +709,29 @@ const CrearOrden: React.FC = () => {
             <AnimatePresence mode="wait" initial={false}>
                 {currentStep === 1 ? <Step1 key="step1" /> : <Step2 key="step2" />}
             </AnimatePresence>
+
+            {/* Modales */}
+            <ModalStyles />
+
+            {/* Modal de Éxito */}
+            <SuccessModal
+                isOpen={showSuccessModal}
+                language="es"
+                type="order"
+                title={modalTitle || undefined}
+                message={modalMessage || undefined}
+                onClose={handleCloseSuccess}
+            />
+
+            {/* Modal de Error */}
+            <ErrorModal
+                isOpen={showErrorModal}
+                language="es"
+                type={errorType}
+                title={modalTitle || undefined}
+                message={modalMessage || undefined}
+                onClose={handleCloseError}
+            />
         </motion.div>
     );
 };

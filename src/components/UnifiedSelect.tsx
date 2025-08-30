@@ -40,7 +40,7 @@ export function UnifiedSelect<T extends FieldValues>({
                 render={({ field: { value, onChange } }) => (
                     <Listbox value={value || ''} onChange={onChange}>
                         {({ open }) => (
-                            <div className="relative z-50">
+                            <div className="relative focus:outline-none">
                                 <Listbox.Button
                                     className={`w-full px-4 py-3 rounded-lg border bg-white text-left text-gray-900 transition-all focus:outline-none focus:ring-2 ${
                                         hasError
@@ -59,26 +59,34 @@ export function UnifiedSelect<T extends FieldValues>({
                                 <Transition
                                     as={Fragment}
                                     show={open}
-                                    enter="transition ease-out duration-200"
-                                    enterFrom="opacity-0 translate-y-1"
-                                    enterTo="opacity-100 translate-y-0"
-                                    leave="transition ease-in duration-150"
-                                    leaveFrom="opacity-100 translate-y-0"
-                                    leaveTo="opacity-0 translate-y-1"
+                                    enter="transition ease-out duration-100"
+                                    enterFrom="opacity-0 scale-95"
+                                    enterTo="opacity-100 scale-100"
+                                    leave="transition ease-in duration-75"
+                                    leaveFrom="opacity-100 scale-100"
+                                    leaveTo="opacity-0 scale-95"
                                 >
-                                    <Listbox.Options className="absolute z-[9999] mt-2 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg focus:outline-none">
+                                    <Listbox.Options className="absolute mt-1 w-full max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg focus:outline-none z-10">
                                         {options.map((option) => (
                                             <Listbox.Option
                                                 key={option}
                                                 value={option}
-                                                className={({ active }) =>
-                                                    `px-3 py-2 text-sm cursor-pointer flex items-center justify-between ${active ? 'bg-[#ff613920]' : ''}`
+                                                className={({ active, selected }) =>
+                                                    `px-4 py-3 text-sm cursor-pointer flex items-center justify-between transition-colors ${
+                                                        active
+                                                            ? 'bg-[#ff6139]/10 text-[#ff6139]'
+                                                            : selected
+                                                                ? 'bg-[#ff6139]/5 text-[#ff6139]'
+                                                                : 'text-gray-900 hover:bg-gray-50'
+                                                    }`
                                                 }
                                             >
                                                 {({ selected }) => (
                                                     <>
-                                                        <span className="text-gray-900">{option}</span>
-                                                        {selected && <Check className="h-4 w-4 text-[#ff6139]" />}
+                                                        <span className={`${selected ? 'font-medium' : ''}`}>
+                                                            {option}
+                                                        </span>
+                                                        {selected && <Check className="h-4 w-4" />}
                                                     </>
                                                 )}
                                             </Listbox.Option>
@@ -92,7 +100,7 @@ export function UnifiedSelect<T extends FieldValues>({
             />
 
             {hasError && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-2 text-sm text-red-600">
                     {error?.message as string}
                 </p>
             )}
