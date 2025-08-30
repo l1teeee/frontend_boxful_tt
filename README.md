@@ -39,7 +39,7 @@ Aplicación web moderna desarrollada en **React + Vite + Tailwind** que ofrece u
 
 ### 📊 **Historial y reportes**
 - 📋 **Listado**: Órdenes en orden cronológico descendente
-- 🔍 **Filtros**: Búsqueda por fecha, estado y número de orden
+- 🔍 **Filtros**: Búsqueda por fecha
 - 📈 **Exportación**: Descarga en formato **CSV** o **PDF**
 - 📱 **Responsive**: Adaptado para móviles y tablets
 
