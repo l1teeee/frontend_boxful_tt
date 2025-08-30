@@ -13,6 +13,7 @@ interface SuccessModalProps {
     language: 'es' | 'en';
     title?: string;
     message?: string;
+    type?: 'login' | 'register';
 }
 
 interface ErrorModalProps {
@@ -81,7 +82,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
                                                               language,
                                                               title,
                                                               message,
-                                                              type = 'register' // Valor por defecto es 'register'
+                                                              type = 'register'
                                                           }) => {
     if (!isOpen) return null;
 
