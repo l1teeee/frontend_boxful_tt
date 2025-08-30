@@ -86,12 +86,6 @@ export class AuthService {
         return AuthStorage.getUser();
     }
 
-    /**
-     * Validar formato de teléfono
-     */
-    static validatePhoneNumber(phone: string): boolean {
-        return AuthValidators.validatePhoneNumber(phone);
-    }
 }
 
 export default AuthService;

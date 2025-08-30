@@ -7,9 +7,11 @@ import { UnifiedDatePicker } from '@/components/UnifiedDatePicker';
 import { UnifiedPhoneInput } from '@/components/UnifiedPhone';
 import { UnifiedSelect } from '@/components/UnifiedSelect';
 import { SuccessModal, ErrorModal, ModalStyles } from '@/components/ConfirmationModals';
-import type { CrearOrdenFormData, Product } from '@/types/api.order';
+import type { CreateOrderRequest, Product } from '@/types/api.order';
 import { departamentosMunicipios} from '@/data/departamentosMunicipio';
 import { validationRules } from '@/utils/validate/validationRules';
+import { createOrder } from '@/services/order/orderService';
+import {AuthStorage} from "@/services/auth";
 
 // Configuración de animaciones
 const stepTransitions = {
@@ -20,16 +22,30 @@ const stepTransitions = {
 
 const CrearOrden: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(1);
-    const { register, control, formState: { errors }, reset, setValue, trigger, getValues } = useForm<CrearOrdenFormData>();
+    const { register, control, formState: { errors },  setValue, trigger, getValues } = useForm<CreateOrderRequest>();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const reset = () => {
+        setValue('information', '');
+        setValue('pickupAddress', '');
+        setValue('estimatedDate', '');
+        setValue('firstName', '');
+        setValue('lastName', '');
+        setValue('email', '');
+        setValue('phone', '');
+        setValue('destinationAddress', '');
+        setValue('department', '');
+        setValue('municipality', '');
+        setValue('referencePoint', '');
 
-    // Estados para los modales
+    };
+
+
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [modalTitle, setModalTitle] = useState('');
     const [modalMessage, setModalMessage] = useState('');
     const [errorType, setErrorType] = useState<'validation' | 'network' | 'general'>('general');
 
-    // Funciones para manejar los modales
     const showValidationError = (missingFields?: string[]) => {
         setErrorType('validation');
 
@@ -121,7 +137,6 @@ const CrearOrden: React.FC = () => {
         return true;
     };
 
-    // Función para validar productos
     const validateProducts = (products: Product[]) => {
         if (products.length === 0) {
             setErrorType('validation');
@@ -157,7 +172,11 @@ const CrearOrden: React.FC = () => {
     };
 
     const handleFinalSubmit = async (products: Product[]) => {
+        if (isSubmitting) return; // Prevenir múltiples envíos
+
         try {
+            setIsSubmitting(true);
+
             // Validar paso 1
             const step1Valid = await validateStep1();
             if (!step1Valid) {
@@ -171,34 +190,65 @@ const CrearOrden: React.FC = () => {
                 return;
             }
 
-            // Si todo está válido, proceder con el envío
+            // Preparar datos para la API
             const formData = getValues();
-            const finalData = {
-                ...formData,
-                products: products
+
+            // Formatear la fecha para ISO string
+            const estimatedDate = formData.estimatedDate
+                ? new Date(formData.estimatedDate).toISOString()
+                : new Date().toISOString();
+
+            const orderData: CreateOrderRequest = {
+                information: formData.information,
+                pickupAddress: formData.pickupAddress,
+                estimatedDate: estimatedDate,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                phone: formData.phone,
+                destinationAddress: formData.destinationAddress,
+                department: formData.department,
+                municipality: formData.municipality,
+                referencePoint: formData.referencePoint,
+                idUserCreate: AuthStorage.getUserId(),
+                products: products.map(product => ({
+                    id: product.id,
+                    length: product.length,
+                    height: product.height,
+                    width: product.width,
+                    weight: product.weight,
+                    content: product.content
+                }))
             };
 
-            console.log('Datos del formulario:', finalData);
+            console.log('Datos del formulario:', orderData);
 
-            // Simular creación de orden exitosa
-            const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
-            showOrderSuccess(orderNumber);
+            // Crear orden usando el servicio
+            const result = await createOrder(orderData);
 
-            // Limpiar formulario después del éxito (con delay)
-            setTimeout(() => {
+            if (result.success) {
+                // Mostrar éxito con los datos reales de la orden
+                const orderInfo = result.data?._id ? `ID: ${result.data._id}` : 'creada correctamente';
+                showOrderSuccess(orderInfo);
+
                 reset();
                 setCurrentStep(1);
-                handleCloseSuccess();
-            }, 4000);
+            } else {
+                throw new Error(result.error || result.message || 'Error al crear la orden');
+            }
 
-        } catch (error) {
-            // Manejar errores de red o del servidor
+        } catch (error: any) { // CAMBIO AQUÍ: any en lugar de never
+            console.error('Error al crear la orden:', error);
+
             setErrorType('network');
             setModalTitle('Error al crear orden');
-            setModalMessage('No se pudo crear la orden. Verifica tu conexión a internet e inténtalo de nuevo.');
+            setModalMessage(error.message || 'No se pudo crear la orden. Verifica tu conexión a internet e inténtalo de nuevo.');
             setShowErrorModal(true);
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
 
     const Step1 = () => {
         const departamentos = Object.keys(departamentosMunicipios);
@@ -377,7 +427,7 @@ const CrearOrden: React.FC = () => {
     const Step2 = () => {
         const [products, setProducts] = useState<Product[]>([
             {
-                id: '1',
+                id: Date.now().toString(),
                 length: '',
                 height: '',
                 width: '',
@@ -626,16 +676,29 @@ const CrearOrden: React.FC = () => {
                     <button
                         type="button"
                         onClick={() => setCurrentStep(1)}
-                        className="flex items-center text-gray-600 hover:text-[#e5562f] transition-colors px-4 py-2"
+                        disabled={isSubmitting}
+                        className="flex items-center text-gray-600 hover:text-[#e5562f] transition-colors px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         ← Regresar
                     </button>
+
                     <button
                         type="button"
                         onClick={() => handleFinalSubmit(products)}
-                        className="bg-[#e5562f] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#d4502a] transition-colors"
+                        disabled={isSubmitting}
+                        className="bg-[#e5562f] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#d4502a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                     >
-                        Enviar
+                        {isSubmitting ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Enviando...
+                            </>
+                        ) : (
+                            'Enviar'
+                        )}
                     </button>
                 </div>
             </motion.div>
