@@ -1,5 +1,5 @@
 import { API_CONFIG } from '@/config/api.config';
-import type { ApiResponse, ApiError } from '@/types/api.types';
+import type { ApiResponse } from '@/types/api.types';
 
 class HttpClient {
     private baseURL: string;
@@ -70,10 +70,6 @@ class HttpClient {
         }
     }
 
-    async get<T>(endpoint: string): Promise<ApiResponse<T>> {
-        return this.request<T>(endpoint, { method: 'GET' });
-    }
-
     async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
         return this.request<T>(endpoint, {
             method: 'POST',
@@ -81,16 +77,6 @@ class HttpClient {
         });
     }
 
-    async put<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
-        return this.request<T>(endpoint, {
-            method: 'PUT',
-            body: data ? JSON.stringify(data) : undefined,
-        });
-    }
-
-    async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
-        return this.request<T>(endpoint, { method: 'DELETE' });
-    }
 }
 
 export const httpClient = new HttpClient();

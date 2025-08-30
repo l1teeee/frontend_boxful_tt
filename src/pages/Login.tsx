@@ -188,8 +188,9 @@ const Login = () => {
 
                 {/* Modal de Éxito */}
                 <SuccessModal
-                    isOpen={showSuccessModal}
-                    language={language}
+                    isOpen={showModal}
+                    language="es"
+                    type="login"
                 />
 
                 {/* Modal de Error */}

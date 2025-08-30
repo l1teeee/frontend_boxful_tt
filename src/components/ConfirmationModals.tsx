@@ -80,14 +80,32 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
                                                               isOpen,
                                                               language,
                                                               title,
-                                                              message
+                                                              message,
+                                                              type = 'register' // Valor por defecto es 'register'
                                                           }) => {
     if (!isOpen) return null;
 
-    const defaultTitle = language === 'es' ? '¡Registro exitoso!' : 'Registration successful!';
-    const defaultMessage = language === 'es'
-        ? 'Tu cuenta ha sido creada correctamente'
-        : 'Your account has been created successfully';
+    // Mensajes por defecto basados en el tipo y idioma
+    const getDefaultContent = () => {
+        if (type === 'login') {
+            return {
+                title: language === 'es' ? '¡Inicio de sesión exitoso!' : 'Login successful!',
+                message: language === 'es'
+                    ? 'Has iniciado sesión correctamente'
+                    : 'You have logged in successfully'
+            };
+        } else {
+            // type === 'register'
+            return {
+                title: language === 'es' ? '¡Registro exitoso!' : 'Registration successful!',
+                message: language === 'es'
+                    ? 'Tu cuenta ha sido creada correctamente'
+                    : 'Your account has been created successfully'
+            };
+        }
+    };
+
+    const defaultContent = getDefaultContent();
 
     return (
         <div className="fixed inset-0 bg-gray-900/65 flex items-center justify-center z-50 px-4">
@@ -105,10 +123,10 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
                         </svg>
                     </div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        {title || defaultTitle}
+                        {title || defaultContent.title}
                     </h3>
                     <p className="text-gray-500">
-                        {message || defaultMessage}
+                        {message || defaultContent.message}
                     </p>
                 </div>
             </div>
