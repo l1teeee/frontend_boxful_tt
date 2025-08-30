@@ -1,23 +1,12 @@
 import React from 'react';
-import {
-    Plus,
-    History,
-    ChevronLeft,
-    ChevronRight,
-    LogOut
-} from 'lucide-react';
+import {Plus, History, ChevronLeft, ChevronRight, LogOut} from 'lucide-react';
 import AuthService from '@/services/auth/authService';
 import { useLogout } from '@/hooks/useLogout';
 import boxImg from "@/assets/box.webp";
 import {AuthStorage} from "@/services/auth";
+import {SidebarProps} from "@/types/Props/SidebarProps"
 
-interface SidebarProps {
-    activeTab: 'crear' | 'historial';
-    setActiveTab: (tab: 'crear' | 'historial') => void;
-    collapsed: boolean;
-    setCollapsed: (collapsed: boolean) => void;
-    userName?: string;
-}
+
 
 const Sidebar: React.FC<SidebarProps> = ({
                                              activeTab,

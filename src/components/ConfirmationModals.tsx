@@ -1,41 +1,8 @@
 import React from 'react';
+import type { ConfirmationModalProps, SuccessModalProps,ErrorModalProps } from '@/types/api.modals';
 
-interface ConfirmationModalProps {
-    isOpen: boolean;
-    phoneNumber: string;
-    language: 'es' | 'en';
-    onConfirm: () => void;
-    onCancel: () => void;
-}
 
-interface SuccessModalProps {
-    isOpen: boolean;
-    language: 'es' | 'en';
-    title?: string;
-    message?: string;
-    type?: 'login' | 'register' | 'order' | 'custom';
-    onClose?: () => void;
-    autoClose?: boolean;
-    autoCloseDelay?: number;
-}
-
-interface ErrorModalProps {
-    isOpen: boolean;
-    language: 'es' | 'en';
-    title?: string;
-    message?: string;
-    type?: 'general' | 'validation' | 'network' | 'custom';
-    onClose: () => void;
-}
-
-// Modal de Confirmación de Teléfono
-export const PhoneConfirmationModal: React.FC<ConfirmationModalProps> = ({
-                                                                             isOpen,
-                                                                             phoneNumber,
-                                                                             language,
-                                                                             onConfirm,
-                                                                             onCancel
-                                                                         }) => {
+export const PhoneConfirmationModal: React.FC<ConfirmationModalProps> = ({isOpen, phoneNumber, language, onConfirm, onCancel}) => {
     if (!isOpen) return null;
 
     return (
@@ -80,17 +47,7 @@ export const PhoneConfirmationModal: React.FC<ConfirmationModalProps> = ({
     );
 };
 
-// Modal de Éxito Mejorado
-export const SuccessModal: React.FC<SuccessModalProps> = ({
-                                                              isOpen,
-                                                              language,
-                                                              title,
-                                                              message,
-                                                              type = 'register',
-                                                              onClose,
-                                                              autoClose = false,
-                                                              autoCloseDelay = 3000
-                                                          }) => {
+export const SuccessModal: React.FC<SuccessModalProps> = ({isOpen, language, title, message, type = 'register', onClose, autoClose = false, autoCloseDelay = 3000}) => {
     React.useEffect(() => {
         if (isOpen && autoClose && onClose) {
             const timer = setTimeout(() => {
@@ -103,7 +60,6 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
 
     if (!isOpen) return null;
 
-    // Mensajes por defecto basados en el tipo y idioma
     const getDefaultContent = () => {
         switch (type) {
             case 'login':
@@ -175,15 +131,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
     );
 };
 
-// Modal de Error Mejorado
-export const ErrorModal: React.FC<ErrorModalProps> = ({
-                                                          isOpen,
-                                                          language,
-                                                          title,
-                                                          message,
-                                                          type = 'general',
-                                                          onClose
-                                                      }) => {
+export const ErrorModal: React.FC<ErrorModalProps> = ({isOpen, language, title, message, type = 'general', onClose}) => {
     if (!isOpen) return null;
 
     // Mensajes por defecto basados en el tipo y idioma
@@ -242,7 +190,7 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
     const buttonColor = type === 'validation' ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-500 hover:bg-red-600';
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+        <div className="fixed inset-0 bg-gray-900/65 bg-opacity-50 flex items-center justify-center z-50 px-4">
             <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform animate-scale-in">
                 <div className="text-center">
                     <div className={`mx-auto flex items-center justify-center h-16 w-16 rounded-full ${bgColor} mb-4`}>
@@ -266,7 +214,6 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({
     );
 };
 
-// Componente de Estilos
 export const ModalStyles: React.FC = () => (
     <style>{`
         @keyframes scale-in {

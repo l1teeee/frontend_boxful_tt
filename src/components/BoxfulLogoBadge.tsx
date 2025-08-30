@@ -1,15 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-type Props = {
-    size?: number | string;
-    width?: number | string;
-    height?: number | string;
-    iconScale?: number;
-    imgSrc?: string;
-    alt?: string;
-};
 import boxImg from "@/assets/box.webp";
-
+import {Props} from "@/types/Props/BoxfullProps"
 
 
 const toCss = (v?: number | string) => (typeof v === 'number' ? `${v}px` : v);

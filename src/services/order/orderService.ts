@@ -1,6 +1,35 @@
 import { API_CONFIG, getApiUrl } from '@/config/api.config';
 import { CreateOrderRequest, CreateOrderResponse, OrderResponse } from '@/types/api.order';
+import { AuthStorage } from "@/services/auth";
 
+// Interfaz para la respuesta de órdenes del usuario
+export interface GetUserOrdersResponse {
+    success: boolean;
+    message: string;
+    data?: OrderResponse[];
+    meta?: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+        hasNextPage: boolean;
+        hasPrevPage: boolean;
+        userId: string;
+        statusFilter: string | null;
+        sortOrder: string;
+        sortBy: string;
+    };
+    error?: string;
+}
+
+// Parámetros para obtener órdenes del usuario
+export interface GetUserOrdersParams {
+    page?: number;
+    limit?: number;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+}
 
 export const createOrder = async (orderData: CreateOrderRequest): Promise<CreateOrderResponse> => {
     try {
@@ -29,87 +58,101 @@ export const createOrder = async (orderData: CreateOrderRequest): Promise<Create
     }
 };
 
-export const getOrders = async (page: number = 1, limit: number = 10) => {
+export const getUserOrders = async (params: GetUserOrdersParams = {}): Promise<GetUserOrdersResponse> => {
     try {
-        const url = `${getApiUrl(API_CONFIG.ENDPOINTS.ORDERS.GET_ALL)}?page=${page}&limit=${limit}`;
-        const response = await fetch(url);
+        // Obtener el ID del usuario autenticado
+        const userId = AuthStorage.getUserId();
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (!userId) {
+            return {
+                success: false,
+                message: 'Usuario no autenticado',
+                error: 'No se pudo obtener el ID del usuario'
+            };
         }
 
-        const result = await response.json();
-        return result;
-    } catch (error) {
-        console.error('Error fetching orders:', error);
-        throw error;
-    }
-};
+        // Construir parámetros de consulta
+        const queryParams = new URLSearchParams();
 
-
-export const getOrderById = async (id: string): Promise<OrderResponse> => {
-    try {
-        const url = `${getApiUrl(API_CONFIG.ENDPOINTS.ORDERS.GET_BY_ID)}/${id}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (params.page) {
+            queryParams.append('page', params.page.toString());
         }
 
-        const result = await response.json();
-        return result.data;
-    } catch (error) {
-        console.error('Error fetching order:', error);
-        throw error;
-    }
-};
+        if (params.limit) {
+            queryParams.append('limit', params.limit.toString());
+        }
 
+        if (params.status) {
+            queryParams.append('status', params.status);
+        }
 
-/**
- * Actualizar una orden
- */
-export const updateOrder = async (id: string, updateData: Partial<CreateOrderRequest & { status: string }>) => {
-    try {
-        const url = `${getApiUrl(API_CONFIG.ENDPOINTS.ORDERS.UPDATE)}/${id}`;
+        // Construir URL usando la configuración centralizada
+        const baseUrl = getApiUrl(`${API_CONFIG.ENDPOINTS.ORDERS.GET_ALL}/user/${userId}`);
+        const url = `${baseUrl}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+
+        console.log('Fetching user orders from:', url);
+
         const response = await fetch(url, {
-            method: 'PATCH',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(updateData),
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
-        const result = await response.json();
+        const result: GetUserOrdersResponse = await response.json();
         return result;
+
     } catch (error) {
-        console.error('Error updating order:', error);
-        throw error;
+        console.error('Error fetching user orders:', error);
+        return {
+            success: false,
+            message: 'Error al obtener las órdenes del usuario',
+            error: error instanceof Error ? error.message : 'Error desconocido'
+        };
     }
 };
 
-/**
- * Eliminar una orden
- */
-export const deleteOrder = async (id: string) => {
-    try {
-        const url = `${getApiUrl(API_CONFIG.ENDPOINTS.ORDERS.DELETE)}/${id}`;
-        const response = await fetch(url, {
-            method: 'DELETE',
-        });
+// Función auxiliar para filtrar órdenes por rango de fechas en el frontend
+export const filterOrdersByDateRange = (
+    orders: OrderResponse[],
+    startDate?: string,
+    endDate?: string
+): OrderResponse[] => {
+    if (!startDate && !endDate) {
+        return orders;
+    }
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+    return orders.filter(order => {
+        const orderDate = new Date(order.createdAt || order.estimatedDate);
+
+        if (startDate && orderDate < new Date(startDate)) {
+            return false;
         }
 
-        const result = await response.json();
-        return result;
-    } catch (error) {
-        console.error('Error deleting order:', error);
-        throw error;
-    }
+        if (endDate && orderDate > new Date(endDate)) {
+            return false;
+        }
+
+        return true;
+    });
 };
 
+// Función auxiliar para obtener estadísticas básicas de las órdenes
+export const getOrdersStatistics = (orders: OrderResponse[]) => {
+    const stats = {
+        total: orders.length,
+        pending: orders.filter(o => o.status === 'PENDING').length,
+        confirmed: orders.filter(o => o.status === 'CONFIRMED').length,
+        inTransit: orders.filter(o => o.status === 'IN_TRANSIT').length,
+        delivered: orders.filter(o => o.status === 'DELIVERED').length,
+        cancelled: orders.filter(o => o.status === 'CANCELLED').length,
+        totalPackages: orders.reduce((acc, order) => acc + (order.products?.length || 0), 0),
+    };
+
+    return stats;
+};

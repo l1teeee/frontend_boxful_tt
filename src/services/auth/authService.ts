@@ -1,16 +1,12 @@
 import { httpClient } from '@/services/httpClient';
 import { API_CONFIG } from '@/config/api.config';
-import type { ApiResponse, AuthResponse } from '@/types/api.types';
-
+import type { ApiResponse, AuthResponse, LoginCredentials } from '@/types/api.types';
 import { AuthValidators } from '@/services/auth/validators';
 import { AuthTransformers, type UserData } from '@/services/auth/transformers';
 import { AuthStorage } from '@/services/auth/storage';
 import { AuthResponseUtils } from '@/services/auth/responseUtils';
 
-export interface LoginCredentials {
-    email: string;
-    password: string;
-}
+
 
 export class AuthService {
     static async register(userData: UserData): Promise<ApiResponse<AuthResponse>> {
@@ -58,30 +54,17 @@ export class AuthService {
     }
 
 
-    /**
-     * Cerrar sesión
-     */
+    /* Cerrar sesión */
     static logout(): void {
         AuthStorage.clearAuthData();
     }
 
-    /**
-     * Verificar si el usuario está autenticado
-     */
+    /* Verificar si el usuario está autenticado */
     static isAuthenticated(): boolean {
         return AuthStorage.isAuthenticated();
     }
 
-    /**
-     * Obtener el token de autenticación
-     */
-    static getToken(): string | null {
-        return AuthStorage.getToken();
-    }
-
-    /**
-     * Obtener datos del usuario
-     */
+    /* Verificar la token */
     static getUser() {
         return AuthStorage.getUser();
     }

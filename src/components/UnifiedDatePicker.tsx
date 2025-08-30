@@ -1,37 +1,11 @@
 import React from 'react';
-import { FieldValues, Path, FieldErrors, Controller, Control } from 'react-hook-form';
+import { FieldValues,Controller, } from 'react-hook-form';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import {UnifiedDatePickerProps} from "@/types/Props/UnifiedDatePickerProps";
 
-interface UnifiedDatePickerProps<T extends FieldValues> {
-    name: Path<T>;
-    label: string;
-    placeholder?: string;
-    control: Control<T>;
-    rules?: object;
-    errors?: FieldErrors<T>;
-    minYear?: number;
-    maxYear?: number;
-    maxDate?: Date;
-    minDate?: Date;
-    className?: string;
-    variant?: 'past' | 'future' | 'custom';
-}
 
-export function UnifiedDatePicker<T extends FieldValues>({
-                                                             name,
-                                                             label,
-                                                             placeholder = 'Seleccionar fecha',
-                                                             control,
-                                                             rules = {},
-                                                             errors,
-                                                             minYear = 1940,
-                                                             maxYear = new Date().getFullYear() + 10,
-                                                             maxDate,
-                                                             minDate,
-                                                             className = '',
-                                                             variant = 'custom'
-                                                         }: UnifiedDatePickerProps<T>) {
+export function UnifiedDatePicker<T extends FieldValues>({name, label, placeholder = 'Seleccionar fecha', control, rules = {}, errors, minYear = 1940, maxYear = new Date().getFullYear() + 10, maxDate, minDate, className = '', variant = 'custom'}: UnifiedDatePickerProps<T>) {
     const error = errors?.[name];
     const hasError = !!error;
 

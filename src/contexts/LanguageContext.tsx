@@ -1,4 +1,3 @@
-// src/contexts/LanguageContext.tsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type Language = 'es' | 'en';
@@ -11,10 +10,8 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// Traducciones
 const translations = {
     es: {
-        // Login
         welcome: 'Bienvenido',
         pleaseEnterCredentials: 'Por favor ingresa tus credenciales',
         email: 'Correo electrónico',
@@ -25,7 +22,6 @@ const translations = {
         needAccount: '¿Necesitas una cuenta? ',
         registerHere: 'Regístrate aquí',
 
-        // Register
         createAccount: 'Crear cuenta',
         joinUs: 'Únete a nosotros',
         firstName: 'Nombre',
@@ -40,11 +36,9 @@ const translations = {
         alreadyHaveAccount: '¿Ya tienes cuenta? ',
         signInHere: 'Inicia sesión aquí',
 
-        // Common
         selectDate: 'Seleccionar fecha'
     },
     en: {
-        // Login
         welcome: 'Welcome',
         pleaseEnterCredentials: 'Please enter your credentials',
         email: 'Email',
@@ -55,7 +49,6 @@ const translations = {
         needAccount: 'Need an account? ',
         registerHere: 'Register here',
 
-        // Register
         createAccount: 'Create Account',
         joinUs: 'Join us',
         firstName: 'First Name',
@@ -70,7 +63,6 @@ const translations = {
         alreadyHaveAccount: 'Already have an account? ',
         signInHere: 'Sign in here',
 
-        // Common
         selectDate: 'Select date'
     }
 };

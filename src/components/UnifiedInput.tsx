@@ -14,17 +14,7 @@ interface UnifiedInputProps<T extends FieldValues> {
     className?: string;
 }
 
-export function UnifiedInput<T extends FieldValues>({
-                                                        name,
-                                                        label,
-                                                        placeholder,
-                                                        type = 'text',
-                                                        register,
-                                                        rules = {},
-                                                        errors,
-                                                        showPasswordToggle = false,
-                                                        className = ''
-                                                    }: UnifiedInputProps<T>) {
+export function UnifiedInput<T extends FieldValues>({name, label, placeholder, type = 'text', register, rules = {}, errors, showPasswordToggle = false, className = ''}: UnifiedInputProps<T>) {
     const [showPassword, setShowPassword] = React.useState(false);
 
     const error = errors?.[name];

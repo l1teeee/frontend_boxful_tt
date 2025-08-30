@@ -32,7 +32,6 @@ const Register = () => {
     const navigate = useNavigate();
     const { t, language } = useLanguage();
 
-    // Estados locales para manejar el loading y modales
     const [loading, setLoading] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -52,15 +51,10 @@ const Register = () => {
 
     const onSubmit = async (data: FormData) => {
         try {
-            console.log('Form submitted:', data);
-
-            // Guardar los datos del formulario y mostrar modal de confirmación
             setFormData(data);
             setPhoneNumber(data.phone);
             setShowConfirmationModal(true);
-
         } catch (error) {
-            console.error('Registration error:', error);
             setErrorMessage(
                 language === 'es'
                     ? 'Ha ocurrido un error inesperado. Por favor, inténtalo de nuevo.'
@@ -78,7 +72,6 @@ const Register = () => {
         setLoading(true);
 
         try {
-            // Usar AuthService directamente
             const response = await AuthService.register({
                 firstName: formData.firstName,
                 lastName: formData.lastName,
@@ -91,17 +84,14 @@ const Register = () => {
             });
 
             if (response.success) {
-                // Si todo sale bien, mostrar el modal de éxito
                 setShowSuccessModal(true);
 
-                // Redirigir después de mostrar el éxito
                 setTimeout(() => {
                     setShowSuccessModal(false);
-                    navigate('/'); // o la ruta que corresponda después del registro
+                    navigate('/');
                 }, 3000);
 
             } else {
-                // Si hay error en el registro, mostrar modal de error
                 setErrorMessage(
                     response.error?.message ||
                     (language === 'es'
@@ -204,7 +194,10 @@ const Register = () => {
                                     label="Fecha de nacimiento"
                                     placeholder="Selecciona tu fecha de nacimiento"
                                     control={control}
-                                    rules={validationRules.required('La fecha de nacimiento es requerida')}
+                                    rules={{
+                                        ...validationRules.birthDate(),
+                                        ...validationRules.required(),
+                                    }}
                                     errors={errors}
                                     variant="past"
                                 />
@@ -295,7 +288,6 @@ const Register = () => {
                     </div>
                 </div>
 
-                {/* Modal de Confirmación de Teléfono */}
                 <PhoneConfirmationModal
                     isOpen={showConfirmationModal}
                     phoneNumber={phoneNumber}
@@ -304,13 +296,11 @@ const Register = () => {
                     onCancel={handleCancelConfirmation}
                 />
 
-                {/* Modal de Éxito */}
                 <SuccessModal
                     isOpen={showSuccessModal}
                     language={language}
                 />
 
-                {/* Modal de Error */}
                 <ErrorModal
                     isOpen={showErrorModal}
                     language={language}

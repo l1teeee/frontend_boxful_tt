@@ -1,4 +1,3 @@
-// @/hooks/useLogout.ts
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '@/services/auth';
@@ -17,15 +16,9 @@ export const useLogout = (): UseLogoutReturn => {
         setLoading(true);
 
         try {
-            // Limpiar datos de autenticación
             AuthService.logout();
-
-            // Pequeña demora para mejor UX
             await new Promise(resolve => setTimeout(resolve, 300));
-
-            // Redirigir al login
             navigate('/', { replace: true });
-
         } catch (error) {
             console.error('Error during logout:', error);
         } finally {

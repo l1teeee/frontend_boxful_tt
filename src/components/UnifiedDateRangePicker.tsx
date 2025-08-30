@@ -18,20 +18,7 @@ interface UnifiedDateRangePickerProps<T extends FieldValues> {
     className?: string;
 }
 
-export function UnifiedDateRangePicker<T extends FieldValues>({
-                                                                  startDateName,
-                                                                  endDateName,
-                                                                  label,
-                                                                  startPlaceholder = 'Fecha inicio',
-                                                                  endPlaceholder = 'Fecha fin',
-                                                                  control,
-                                                                  startDateRules = {},
-                                                                  endDateRules = {},
-                                                                  errors,
-                                                                  minDate,
-                                                                  maxDate = new Date(),
-                                                                  className = ''
-                                                              }: UnifiedDateRangePickerProps<T>) {
+export function UnifiedDateRangePicker<T extends FieldValues>({startDateName, endDateName, label, startPlaceholder = 'Fecha inicio', endPlaceholder = 'Fecha fin', control, startDateRules = {}, endDateRules = {}, errors, minDate, maxDate = new Date(), className = ''}: UnifiedDateRangePickerProps<T>) {
     const startError = errors?.[startDateName];
     const endError = errors?.[endDateName];
     const hasStartError = !!startError;

@@ -21,16 +21,12 @@ interface LoginFormData {
 const Login = () => {
     const navigate = useNavigate();
     const { t, language } = useLanguage();
-
-    // Estados locales
     const [loading, setLoading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>();
-
-    // Redirigir si ya está autenticado
     useEffect(() => {
         if (AuthService.isAuthenticated()) {
             navigate('/dashboard');
@@ -41,7 +37,6 @@ const Login = () => {
         setLoading(true);
 
         try {
-            console.log('Login form submitted:', data);
 
             const response = await AuthService.login({
                 email: data.email,
@@ -49,17 +44,14 @@ const Login = () => {
             });
 
             if (response.success) {
-                // Mostrar modal de éxito
                 setShowSuccessModal(true);
 
-                // Redirigir después del éxito
                 setTimeout(() => {
                     setShowSuccessModal(false);
                     navigate('/dashboard');
                 }, 2000);
 
             } else {
-                // Mostrar modal de error
                 setErrorMessage(
                     response.error?.message ||
                     (language === 'es'
