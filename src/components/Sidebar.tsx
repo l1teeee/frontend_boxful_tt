@@ -15,7 +15,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                                          }) => {
     const { logout, loading } = useLogout();
     const [isMobile, setIsMobile] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Detectar si es móvil
     useEffect(() => {
@@ -44,19 +43,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     const handleMenuItemClick = (itemId: string) => {
         // @ts-ignore
         setActiveTab(itemId);
-        if (isMobile) {
-            setMobileMenuOpen(false);
-        }
     };
 
-    const handleLogout = () => {
-        logout();
-        if (isMobile) {
-            setMobileMenuOpen(false);
-        }
-    };
-
-    // Renderizado para móvil (Header + Bottom Navigation)
+    // Renderizado para móvil (Header + Bottom Navigation únicamente)
     if (isMobile) {
         return (
             <>
@@ -70,21 +59,12 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <span className="text-xl font-bold text-[#ff6139]">Boxful</span>
                     </div>
 
-                    {/* Usuario y menú */}
-                    <div className="flex items-center space-x-3">
-                        <div className="flex items-center space-x-2">
-                            <div className="bg-gradient-to-br from-[#ff6139] to-[#e5562f] rounded-full flex items-center justify-center text-white font-semibold w-8 h-8 text-xs">
-                                {getUserInitial(displayName)}
-                            </div>
-                            <span className="text-sm font-medium text-gray-900 max-w-20 truncate">{displayName}</span>
+                    {/* Usuario */}
+                    <div className="flex items-center space-x-2">
+                        <div className="bg-gradient-to-br from-[#ff6139] to-[#e5562f] rounded-full flex items-center justify-center text-white font-semibold w-8 h-8 text-xs">
+                            {getUserInitial(displayName)}
                         </div>
-
-                        <button
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        >
-                            <Menu size={20} />
-                        </button>
+                        <span className="text-sm font-medium text-gray-900 max-w-24 truncate">{displayName}</span>
                     </div>
                 </div>
 
@@ -108,83 +88,23 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 <span className="text-xs font-medium truncate">{item.label}</span>
                             </button>
                         ))}
+
+                        {/* Botón de logout en el bottom navigation */}
+                        <button
+                            onClick={() => logout()}
+                            disabled={loading}
+                            className="flex flex-col items-center space-y-1 px-4 py-2 rounded-lg transition-all duration-200 focus:outline-none min-w-0 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <LogOut size={20} />
+                            <span className="text-xs font-medium truncate">
+                                {loading ? 'Salir...' : 'Salir'}
+                            </span>
+                        </button>
                     </div>
                 </div>
 
                 {/* Spacer para el bottom navigation */}
                 <div className="h-16 md:hidden"></div>
-
-                {/* Menú lateral deslizante */}
-                {mobileMenuOpen && (
-                    <>
-                        <div
-                            className="fixed inset-0 bg-gray-900/65 bg-opacity-50 z-40 md:hidden"
-                            onClick={() => setMobileMenuOpen(false)}
-                        />
-
-                        <div className="fixed top-0 right-0 h-full w-72 bg-white z-50 md:hidden shadow-xl">
-                            <div className="flex flex-col h-full">
-                                {/* Header del menú lateral */}
-                                <div className="flex items-center justify-between border-b border-gray-200 p-4 bg-[#ff6139] text-white">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="bg-white text-[#ff6139] bg-opacity-20 rounded-full flex items-center justify-center w-10 h-10 text-sm font-semibold">
-                                            {getUserInitial(displayName)}
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold">{displayName}</p>
-                                            <p className="text-xs opacity-90">ID: {AuthStorage.getUserId()}</p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
-                                    >
-                                        <X size={20} />
-                                    </button>
-                                </div>
-
-                                {/* Opciones del menú */}
-                                <div className="flex-1 p-6">
-                                    <div className="space-y-4">
-                                        <div>
-                                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Navegación</h3>
-                                            <div className="space-y-1">
-                                                {menuItems.map(item => (
-                                                    <button
-                                                        key={item.id}
-                                                        onClick={() => handleMenuItemClick(item.id)}
-                                                        className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-all duration-200 focus:outline-none ${
-                                                            activeTab === item.id
-                                                                ? 'bg-[#ff6139] bg-opacity-10 text-white font-medium'
-                                                                : 'text-gray-700 hover:bg-gray-50'
-                                                        }`}
-                                                    >
-                                                        <item.icon size={20} />
-                                                        <span>{item.label}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Botón logout */}
-                                <div className="border-t border-gray-100 p-4">
-                                    <button
-                                        onClick={handleLogout}
-                                        disabled={loading}
-                                        className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-50 text-red-600 rounded-lg transition-all duration-200 focus:outline-none hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <LogOut size={18} />
-                                        <span className="font-medium">
-                                            {loading ? 'Cerrando...' : 'Cerrar Sesión'}
-                                        </span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                )}
             </>
         );
     }
