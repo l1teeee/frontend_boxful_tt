@@ -24,7 +24,7 @@ const Historial: React.FC = () => {
     const [showProductModal, setShowProductModal] = useState<boolean>(false);
     const [selectedOrderProducts, setSelectedOrderProducts] = useState<Product[]>([]);
     const [selectedOrderNumber, setSelectedOrderNumber] = useState<string>('');
-    const [pagination, setPagination] = useState({
+    const [pagination] = useState({
         page: 1,
         limit: 10,
         total: 0,
@@ -37,27 +37,16 @@ const Historial: React.FC = () => {
     const startDate = watch('fechaInicio');
     const endDate = watch('fechaFin');
 
-    const loadOrders = async (page = 1, limit = 10) => {
+    const loadOrders = async () => {
         try {
             setLoading(true);
             setError(null);
 
-            const response = await getUserOrders({ page, limit });
+            const response = await getUserOrders();
 
             if (response.success && response.data) {
                 setEnvios(response.data);
                 setFilteredEnvios(response.data);
-
-                if (response.meta) {
-                    setPagination({
-                        page: response.meta.page,
-                        limit: response.meta.limit,
-                        total: response.meta.total,
-                        totalPages: response.meta.totalPages,
-                        hasNextPage: response.meta.hasNextPage,
-                        hasPrevPage: response.meta.hasPrevPage
-                    });
-                }
             } else {
                 setError(response.message || 'Error al cargar las órdenes');
                 setEnvios([]);
@@ -90,12 +79,13 @@ const Historial: React.FC = () => {
         console.log('Buscando con fechas:', { startDate, endDate });
     });
 
+
     const handleRefresh = () => {
-        loadOrders(pagination.page, pagination.limit);
+        loadOrders();
     };
 
-    const handlePageChange = (newPage: number) => {
-        loadOrders(newPage, pagination.limit);
+    const handlePageChange = () => {
+        loadOrders();
     };
 
     const prepareExportData = (): ExportStatistics => {

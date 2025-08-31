@@ -58,9 +58,8 @@ export const createOrder = async (orderData: CreateOrderRequest): Promise<Create
     }
 };
 
-export const getUserOrders = async (params: GetUserOrdersParams = {}): Promise<GetUserOrdersResponse> => {
+export const getUserOrders = async (): Promise<GetUserOrdersResponse> => {
     try {
-        // Obtener el ID del usuario autenticado
         const userId = AuthStorage.getUserId();
 
         if (!userId) {
@@ -70,29 +69,8 @@ export const getUserOrders = async (params: GetUserOrdersParams = {}): Promise<G
                 error: 'No se pudo obtener el ID del usuario'
             };
         }
-
-        // Construir parámetros de consulta
-        const queryParams = new URLSearchParams();
-
-        if (params.page) {
-            queryParams.append('page', params.page.toString());
-        }
-
-        if (params.limit) {
-            queryParams.append('limit', params.limit.toString());
-        }
-
-        if (params.status) {
-            queryParams.append('status', params.status);
-        }
-
-        // Construir URL usando la configuración centralizada
-        const baseUrl = getApiUrl(`${API_CONFIG.ENDPOINTS.ORDERS.GET_ALL}/user/${userId}`);
-        const url = `${baseUrl}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-
-        console.log('Fetching user orders from:', url);
-
-        const response = await fetch(url, {
+        console.log('Fetching user orders from:', getApiUrl(`${API_CONFIG.ENDPOINTS.ORDERS.GET_ALL}/user/${userId}`));
+        const response = await fetch(getApiUrl(`${API_CONFIG.ENDPOINTS.ORDERS.GET_ALL}/user/${userId}`), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -116,6 +94,7 @@ export const getUserOrders = async (params: GetUserOrdersParams = {}): Promise<G
         };
     }
 };
+
 
 // Función auxiliar para filtrar órdenes por rango de fechas en el frontend
 export const filterOrdersByDateRange = (
