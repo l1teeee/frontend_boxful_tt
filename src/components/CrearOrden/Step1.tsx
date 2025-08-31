@@ -55,7 +55,7 @@ const Step1: React.FC<Step1Props> = ({register, control, errors, setValue, onNex
             animate={stepTransitions.animate}
             exit={stepTransitions.exit}
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="bg-white rounded-lg shadow-sm p-6"
+            className="bg-white rounded-lg shadow-sm p-6 mb-16"
         >
             <h2 className="text-xl font-semibold text-black mb-6">Completa los datos</h2>
 
