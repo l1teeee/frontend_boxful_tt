@@ -74,6 +74,7 @@ export const getUserOrders = async (): Promise<GetUserOrdersResponse> => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
             },
         });
 
